@@ -3,7 +3,7 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace ProjectEuler
+namespace PrimeNumbers
 {
     public class PrimeNumbers
     {
@@ -18,46 +18,48 @@ namespace ProjectEuler
 
         public PrimeNumbers(int primeCount)
         {
-            List = GetPrimesBySieve(primeCount);
+            List = new List<int>();
+            LoadPrimesBySieve(primeCount);
         }
 
-        public List<int> GetPrimesByFile(string fileFullName, int primeCount)
+        public void LoadPrimesByFile(string fileFullName, int primeCount)
         {
-            List<int> primes = new List<int>();
-
-            using (FileStream fileStream = new FileStream(fileFullName, FileMode.Open))
+            using (BinaryReader binaryReader = new BinaryReader(new FileStream(fileFullName, FileMode.Open)))
             {
-                using (BinaryReader binaryReader = new BinaryReader(fileStream))
+                while (binaryReader.BaseStream.Position != binaryReader.BaseStream.Length && List.Count < primeCount)
                 {
-                    while (binaryReader.BaseStream.Position != binaryReader.BaseStream.Length && primes.Count < primeCount)
-                    {
-                        primes.Add(binaryReader.ReadInt32());
-                    }
+                    List.Add(binaryReader.ReadInt32());
                 }
             }
-
-            if (primes.Count < primeCount)
+            if (List.Count < primeCount)
             {
                 throw new PrimeNumbersException();
             }
-
-            return primes;
         }
 
-        public List<int> GetPrimesBySieve(int primeCount)
+        public void LoadPrimesByFile(string fileFullName)
+        {
+            using (BinaryReader binaryReader = new BinaryReader(new FileStream(fileFullName, FileMode.Open)))
+            {
+                while (binaryReader.BaseStream.Position != binaryReader.BaseStream.Length)
+                {
+                    List.Add(binaryReader.ReadInt32());
+                }
+            }
+        }
+
+        public void LoadPrimesBySieve(int primeCount)
         {
             int limit = GetNthPrimeApproximation(primeCount);
             BitArray bitArray = SieveOfEratosthenes(limit);
-            List<int> primes = new List<int>();
             for (int i = 0, found = 0; i < limit && found < primeCount; i++)
             {
                 if (bitArray[i])
                 {
-                    primes.Add(i);
+                    List.Add(i);
                     found++;
                 }
             }
-            return primes;
         }
 
         private int GetNthPrimeApproximation(int atN)
@@ -99,7 +101,6 @@ namespace ProjectEuler
             }
             return bits;
         }
-
     }
 
     [Serializable()]
